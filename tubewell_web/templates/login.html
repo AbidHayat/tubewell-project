@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Tubewell Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c7da0;
+            --secondary: #a9d6e5;
+            --success: #4cc9a4;
+            --danger: #e85d75;
+            --dark: #2a6f97;
+            --light: #f8f9fa;
+            --gradient-start: #2c7da0;
+            --gradient-end: #01497c;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            margin: 0;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-placeholder {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 5px 15px rgba(44, 125, 160, 0.3);
+            overflow: hidden;
+        }
+
+        .logo-img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .login-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .login-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        /* Custom form styling to match screenshot layout */
+        .form-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .form-check-input.static-checkbox {
+            margin-right: 12px;
+            pointer-events: none;
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .form-control.simple-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .form-control.simple-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(44, 125, 160, 0.25);
+        }
+
+        .checkbox-item {
+            margin-left: 32px;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-item .form-check-input {
+            margin-right: 10px;
+        }
+
+        .checkbox-item .form-check-label {
+            color: #495057;
+            font-size: 0.95rem;
+        }
+
+        .button-group {
+            margin-left: 32px;
+            margin-top: 1rem;
+        }
+
+        .btn-login {
+            background: linear-gradient(to right, var(--primary), var(--dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 125, 160, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .forgot-password:hover {
+            color: var(--dark);
+            text-decoration: underline;
+        }
+
+        .demo-credentials {
+            text-align: center;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+            margin-left: 32px;
+        }
+
+        .is-invalid {
+            border-color: var(--danger) !important;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            border-left: 4px solid;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background-color: rgba(232, 93, 117, 0.1);
+            color: var(--danger);
+            border-left-color: var(--danger);
+        }
+
+        .alert-success {
+            background-color: rgba(76, 201, 164, 0.1);
+            color: var(--success);
+            border-left-color: var(--success);
+        }
+
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.6rem;
+            }
+            
+            body {
+                padding: 0.5rem;
+            }
+
+            .button-group {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .btn-login {
+                margin-right: 0;
+                margin-bottom: 1rem;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo-placeholder">
+                <img src="{{ url_for('static', filename='images/log.jpg') }}" alt="Tubewell Manager Logo" class="logo-img">
+            </div>
+            <h1 class="login-title">Login to Tubewell Manager</h1>
+            <p class="login-subtitle">Access your dashboard to monitor and control tubewells</p>
+        </div>
+
+        <!-- Flash messages for backend errors -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/login" id="loginForm">
+            <!-- Username Field -->
+            <div class="form-item">
+                <!-- <input class="form-check-input static-checkbox" type="checkbox" disabled checked> -->
+                <input type="text" class="form-control simple-input" id="username" name="username" placeholder="Username or Email" required>
+            </div>
+            <div class="error-message" id="usernameError">Please enter your username or email</div>
+
+            <!-- Password Field -->
+            <div class="form-item">
+                <!-- <input class="form-check-input static-checkbox" type="checkbox" disabled checked> -->
+                <input type="password" class="form-control simple-input" id="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="error-message" id="passwordError">Please enter your password</div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="checkbox-item">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                    <label class="form-check-label" for="rememberMe">
+                        Remember me
+                    </label>
+                </div>
+            </div>
+
+            <!-- Login Button and Forgot Password -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <div class="demo-credentials">
+                Demo credentials: admin/password123 | operator/operator123
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Reset error states
+                $('.error-message').hide();
+                $('.form-control').removeClass('is-invalid');
+                
+                let isValid = true;
+                
+                // Validate username
+                const username = $('#username').val().trim();
+                if (!username) {
+                    $('#usernameError').show();
+                    $('#username').addClass('is-invalid');
+                    isValid = false;
+                }
+                
+                // Validate password
+                const password = $('#password').val();
+                if (!password) {
+                    $('#passwordError').show();
+                    $('#password').addClass('is-invalid');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    // Add loading state to button
+                    const btn = $(this).find('.btn-login');
+                    btn.prop('disabled', true);
+                    btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Logging in...');
+                    
+                    // Form will submit to Flask backend
+                    setTimeout(() => {
+                        this.submit();
+                    }, 500);
+                }
+            });
+            
+            // Clear error when user starts typing
+            $('.form-control').on('input', function() {
+                $(this).removeClass('is-invalid');
+                $(this).closest('.form-item').next('.error-message').hide();
+            });
+        });
+    </script>
+</body>
+</html>

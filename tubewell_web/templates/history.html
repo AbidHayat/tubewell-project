@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tubewell Performance Comparison</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #2c7da0;
+      --secondary: #a9d6e5;
+      --success: #4cc9a4;
+      --danger: #e85d75;
+      --dark: #2a6f97;
+      --light: #f8f9fa;
+      --gradient-start: #2c7da0;
+      --gradient-end: #01497c;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .dashboard-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+    
+    .header-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-section h1 {
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .header-section p {
+      color: #6c757d;
+      font-size: 1.1rem;
+    }
+    
+    .detail-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border: none;
+    }
+    
+    .filter-bar {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+      height: 100%;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chart-container:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-title {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .chart-title i {
+      margin-right: 0.5rem;
+    }
+    
+    .chart-canvas-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 0 0 15px 15px;
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .last-updated {
+      font-size: 0.8rem;
+      color: #6c757d;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .back-btn {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .toggle-btn {
+      width: 100%;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 0;
+      transition: all 0.3s ease;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .toggle-on {
+      background: linear-gradient(to right, var(--success), #3ab795);
+      color: white;
+    }
+    
+    .toggle-off {
+      background: linear-gradient(to right, #6c757d, #8a939b);
+      color: white;
+    }
+    
+    .toggle-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+      border-left: 4px solid var(--primary);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .metric-value {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--dark);
+      margin-bottom: 0.3rem;
+    }
+    
+    .metric-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .placeholder-box {
+      min-height: 220px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#6c757d;
+    }
+    
+    @media (max-width: 992px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      
+      .header-section h1 {
+        font-size: 1.75rem;
+      }
+      
+      .detail-card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light sticky-top mb-4">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="fas fa-water me-2" style="color: var(--primary);"></i>
+        Tubewell Manager
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+          </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link active" href="#"><i class="fas fa-chart-simple me-1"></i> Comparison</a>
+          </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-history me-1"></i> History</a>
+          </li>
+                          <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item-text">
+                            <small class="text-muted">Logged in as</small><br>
+                            <strong>{{ current_user.username }}</strong>
+                        </span></li>
+                        <!-- <li><hr class="dropdown-divider"></li> -->
+                        <!-- <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a></li> -->
+                        <!-- <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a></li> -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-cog me-1"></i> Settings</a>
+          </li> -->
+          <!-- <li class="nav-item">
+            <a class="nav-link position-relative" href="#">
+              <i class="fas fa-bell me-1"></i> Alerts
+              <span class="notification-badge">3</span>
+            </a>
+          </li> -->
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container dashboard-container">
+    <div class="header-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1><i class="fas fa-chart-simple me-2"></i><span id="tubewellTitle">Tubewell Performance Comparison</span></h1>
+          <p class="lead">Compare voltage, current, and power data across selected tubewells</p>
+        </div>
+        <a href="/" class="btn back-btn">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <!-- Filters -->
+      <div class="filter-bar mb-4">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5">
+            <label class="form-label mb-1">Select Tubewells</label>
+            <select id="tubewell-select" class="form-select" multiple aria-label="Select tubewells"></select>
+            <div class="form-text">Hold Ctrl/Cmd to multi-select. Up to 6 tubewells recommended.</div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label mb-1">From</label>
+            <input id="date-from" type="date" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label mb-1">To</label>
+            <input id="date-to" type="date" class="form-control">
+          </div>
+
+          <div class="col-md-1 d-flex align-items-end justify-content-end">
+            <button id="compare-btn" class="btn btn-primary w-100"><i class="fas fa-arrows-left-right me-1"></i> Compare</button>
+          </div>
+
+          <div class="col-12 pt-2">
+            <div id="range-note" class="form-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Export + Loading -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <button id="export-csv" class="btn btn-outline-secondary btn-sm me-2"><i class="fas fa-file-csv me-1"></i> Export CSV</button>
+          <button id="export-png" class="btn btn-outline-secondary btn-sm"><i class="fas fa-image me-1"></i> Export PNG</button>
+        </div>
+        <div id="loading-status" class="text-muted small">&nbsp;</div>
+      </div>
+
+      <!-- Charts -->
+      <!-- <div id="charts-area">
+        <div class="charts-grid">
+          <div class="chart-container">
+            <div class="chart-title">
+              <i class="fas fa-bolt me-2"></i>Voltage Comparison
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-voltage"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-title">
+              <i class="fas fa-bolt-lightning me-2"></i>Current Comparison
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-current"></canvas>
+            </div>
+          </div> -->
+
+          <div Class ="charts-grid">  
+          <div class="chart-container">
+            <div class="chart-title">
+              <i class="fas fa-chart-line me-2"></i>Active Power Comparison
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-active"></canvas>
+            </div>
+          </div>
+          
+
+          <div class="chart-container">
+            <div class="chart-title">
+              <i class="fas fa-chart-area me-2"></i>Reactive Power Comparison
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-reactive"></canvas>
+            </div>
+          </div>
+          </div>
+        
+
+        <!-- Placeholder if no selection -->
+        <div id="no-selection" class="card mt-4 placeholder-box" style="display:none">
+          <div>
+            <div class="text-center">
+              <i class="fas fa-angles-right fa-2x mb-2" style="color:var(--primary)"></i>
+              <div class="h5">Select one or more tubewells to compare their performance.</div>
+              <div class="text-muted">Use the filters above and click Compare.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div id="summary-cards" class="row mt-4"></div>
+      </div>
+    </div>
+    
+    <div class="last-updated">
+      <i class="fas fa-sync-alt me-1"></i> Last updated: <span id="update-time">10/01/2025 4:15:57 PM</span>
+    </div>
+  </div>
+
+  <script>
+    // --- Configuration ---
+    const API_ENDPOINT = '/api/comparison';
+    const COLOR_PALETTE = ['#2c7da0', '#a9d6e5', '#4cc9a4', '#e85d75', '#2a6f97', '#01497c'];
+
+    let charts = {};
+    let latestComparisonData = null;
+
+    function showLoading(text = 'Loading data...') {
+      document.getElementById('loading-status').innerText = text;
+      document.getElementById('compare-btn').disabled = true;
+    }
+    function hideLoading() {
+      document.getElementById('loading-status').innerText = '';
+      document.getElementById('compare-btn').disabled = false;
+    }
+
+    // Helper: friendly date
+    function fmtDate(d) { if (!d) return ''; const D = new Date(d); return D.toLocaleDateString(); }
+
+    // Populate tubewell list from backend
+    async function loadTubewells() {
+      try {
+        const res = await fetch('/api/tubewells');
+        if (!res.ok) throw new Error('Failed to load tubewells');
+        const list = await res.json();
+        const sel = document.getElementById('tubewell-select');
+        sel.innerHTML = '';
+        list.forEach((tw, idx) => {
+          const opt = document.createElement('option');
+          opt.value = tw.id || tw.name || idx + 1;
+          opt.text = `${idx + 1}`;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.error(e);
+        document.getElementById('range-note').innerText = 'Unable to load tubewell list.';
+      }
+    }
+
+    // Build datasets for charts, using aggregated value per tubewell (average over period)
+    function prepareComparisonData(apiData) {
+      const tubewellIds = Object.keys(apiData.tubewells || {});
+      const labels = ['Total Used Power'];
+      const datasets = { active: [], reactive: [] };
+
+      tubewellIds.forEach((id, i) => {
+        const tw = apiData.tubewells[id];
+        const color = COLOR_PALETTE[i % COLOR_PALETTE.length];
+
+
+        // Helper to average phase values across points
+        function sumMetric(metricName) {
+          const arr = tw.metrics && tw.metrics[metricName];
+          if (!arr || arr.length === 0) return 0;
+
+          const perPoint = arr.map(p => {
+            if (!p || !p.value) return 0;
+            if (typeof p.value === 'object') {
+              const vals = Object.values(p.value).filter(v => v != null);
+              if (vals.length === 0) return null;
+              return vals.reduce((a,b)=>a+b,0);
+            }
+            return p.value || 0;
+          });
+
+          return perPoint.reduce((a, b) => a + b, 0);
+        }
+        //   }).filter(x=>x!=null);
+        //   if (perPoint.length === 0) return null;
+        //   return perPoint.reduce((a,b)=>a+b,0);
+        // }
+
+        const totalActiveUsed = tw.total_active_energy || tw.total_energy || sumMetric('active_power') || 0;
+        const totalReactiveUsed = tw.total_reactive_energy || sumMetric('reactive_power') || 0;
+
+            datasets.active.push({
+              label: tw.name || `Tubewell ${id}`,
+              data: [totalActiveUsed],
+              backgroundColor: color,
+              borderColor: color,
+              fill: false
+            });
+
+            datasets.reactive.push({
+              label: tw.name || `Tubewell ${id}`,
+              data: [totalReactiveUsed / 1000],
+              backgroundColor: color,
+              borderColor: color,
+              fill: false
+            });
+          });
+
+      return { datasets, labels };
+    }
+
+    // Render or update charts
+    function renderComparisonCharts(apiData) {
+      latestComparisonData = apiData;
+      const prepared = prepareComparisonData(apiData);
+
+      // If no tubewells selected
+      const hasTWs = Object.keys(apiData.tubewells||{}).length > 0;
+      document.getElementById('no-selection').style.display = hasTWs ? 'none' : 'flex';
+
+      // Generic chart creation helper
+      function createOrUpdateChart(canvasId, metricKey, metricLabel, unit) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const data = {
+          labels: prepared.labels,
+          datasets: prepared.datasets[metricKey].map(ds => ({ 
+            label: ds.label, 
+            data: ds.data.map(v => v==null ? null : Number(v)), 
+            backgroundColor: ds.backgroundColor, 
+            borderColor: ds.borderColor 
+          }))
+        };
+
+        const options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const v = ctx.raw;
+                  const lbl = ctx.dataset.label || '';
+                  if (v === null || typeof v === 'undefined' || isNaN(v)) return lbl + ': N/A';
+                  const scaled = v >= 1000 ? (v / 1000).toFixed(2) + ' k' + unit : v.toFixed(2) + ' ' + unit;
+                  return lbl + ': ' + scaled;
+
+                }
+              }
+            },
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              title: { display: true, text: unit ? `${metricLabel} (${unit})` : metricLabel },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        };
+
+        // If chart exists, update datasets
+        if (charts[canvasId]) {
+          charts[canvasId].data = data;
+          charts[canvasId].options = options;
+          charts[canvasId].update();
+          return charts[canvasId];
+        }
+
+        charts[canvasId] = new Chart(ctx, { type: 'bar', data, options });
+        return charts[canvasId];
+      }
+
+      // createOrUpdateChart('chart-voltage', 'voltage', 'Voltage', 'V');
+      // createOrUpdateChart('chart-current', 'current', 'Current', 'A');
+      createOrUpdateChart('chart-active', 'active', 'Active Power', 'kW');
+      createOrUpdateChart('chart-reactive', 'reactive', 'Reactive Power', 'kVAR');
+
+      // Summary cards
+      renderSummaryCards(apiData);
+
+      // Range note
+      if (apiData.available_start && apiData.available_end) {
+        const start = fmtDate(apiData.available_start);
+        const end = fmtDate(apiData.available_end);
+        const days = Math.max(1, Math.round((new Date(apiData.available_end)-new Date(apiData.available_start))/(24*3600*1000)) + 1);
+        document.getElementById('range-note').innerText = `Data shown from ${start} to ${end} — total ${days} day(s).`;
+      } else {
+        document.getElementById('range-note').innerText = '';
+      }
+      
+      // Update last updated time
+      document.getElementById('update-time').textContent = new Date().toLocaleString();
+    }
+
+    // Render summary cards below charts
+function renderSummaryCards(apiData) {
+  const container = document.getElementById('summary-cards');
+  container.innerHTML = '';
+  const twIds = Object.keys(apiData.tubewells || {});
+  if (twIds.length === 0) return;
+
+  twIds.forEach((id) => {
+    const tw = apiData.tubewells[id];
+    const metrics = tw.metrics || {};
+
+    // Utility to average/sum metrics
+    function sumMetric(metric) {
+      const arr = metrics[metric];
+      if (!arr || arr.length === 0) return null;
+      const vals = arr.flatMap(p =>
+        typeof p.value === 'object' ? Object.values(p.value).filter(x => x != null) : [p.value]
+      );
+      if (vals.length === 0) return null;
+      return vals.reduce((a, b) => a + b, 0);
+    }
+
+    function avgOf(metric) {
+      const arr = metrics[metric];
+      if (!arr || arr.length === 0) return null;
+      const vals = arr.flatMap(p =>
+        typeof p.value === 'object' ? Object.values(p.value).filter(x => x != null) : [p.value]
+      );
+      if (vals.length === 0) return null;
+      return vals.reduce((a, b) => a + b, 0) / vals.length;
+    }
+
+    // ✅ Calculate totals
+    const totalActive = tw.total_active_energy || tw.total_energy || sumMetric('active_power') || 0;
+    const totalReactive = tw.total_reactive_energy || sumMetric('reactive_power') || 0;
+
+    // ⚙️ Adjust units — scale if needed
+    const scaledActive = totalActive >= 1000 ? (totalActive / 1000).toFixed(2) + ' kWh' : totalActive.toFixed(2) + ' Wh';
+    const scaledReactive = totalReactive >= 1000 ? (totalReactive / 1000).toFixed(2) + ' kVARh' : totalReactive.toFixed(2) + ' VARh';
+
+    const avgPF = avgOf('power_factor');
+
+    // ✅ Create the card
+    const col = document.createElement('div');
+    col.className = 'col-md-4 mb-3';
+    col.innerHTML = `
+      <div class="summary-card">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="metric-label">${tw.name || 'Tubewell ' + id}</div>
+            <div class="metric-value">ID: ${id}</div>
+          </div>
+          <div class="text-end">
+            <div class="metric-label">Avg PF</div>
+            <div class="metric-value">${avgPF ? Number(avgPF).toFixed(3) : 'N/A'}</div>
+          </div>
+        </div>
+        <hr>
+        <div class="text-center">
+          <i class="fas fa-bolt me-2"></i>
+          <strong>Active Power:</strong> ${scaledActive}<br>
+          <i class="fas fa-wave-square me-2 mt-2"></i>
+          <strong>Reactive Power:</strong> ${scaledReactive}
+        </div>
+      </div>
+    `;
+    container.appendChild(col);
+  });
+}
+
+
+    // Fetch comparison data from backend
+    async function fetchComparison(selectedIds, fromDate, toDate) {
+      if (!selectedIds || selectedIds.length === 0) {
+        document.getElementById('no-selection').style.display = 'flex';
+        return { tubewells: {} };
+      }
+
+      showLoading();
+      try {
+        const params = new URLSearchParams();
+        params.set('ids', selectedIds.join(','));
+        if (fromDate) params.set('from', fromDate);
+        if (toDate) params.set('to', toDate);
+        const url = `${API_ENDPOINT}?${params.toString()}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const txt = await res.text(); throw new Error(txt || 'Server error');
+        }
+        const data = await res.json();
+        hideLoading();
+        if (!data || !data.tubewells || Object.keys(data.tubewells).length === 0) {
+          document.getElementById('no-selection').style.display = 'none';
+          document.getElementById('range-note').innerText = 'No data available for this period.';
+          return { tubewells: {} };
+        }
+        renderComparisonCharts(data);
+        return data;
+      } catch (e) {
+        hideLoading();
+        console.error(e);
+        document.getElementById('range-note').innerText = 'Failed to load comparison data.';
+        return { tubewells: {} };
+      }
+    }
+
+    // Exports
+    function exportCSVFromData(data) {
+      if (!data || !data.tubewells) return;
+      let rows = [['tubewell','metric','timestamp','phase','value']];
+      for (const id of Object.keys(data.tubewells)) {
+        const tw = data.tubewells[id];
+        for (const metric of Object.keys(tw.metrics||{})) {
+          const arr = tw.metrics[metric] || [];
+          arr.forEach(pt => {
+            const ts = pt.time || '';
+            if (pt.value && typeof pt.value === 'object') {
+              for (const ph of Object.keys(pt.value)) rows.push([tw.name||id, metric, ts, ph, pt.value[ph]]);
+            } else {
+              rows.push([tw.name||id, metric, ts, '', pt.value]);
+            }
+          });
+        }
+      }
+      const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'tubewell_comparison.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    function exportChartsAsPNG() {
+      Object.keys(charts).forEach(id => {
+        try { const url = charts[id].toBase64Image(); window.open(url, '_blank'); } catch (e) { console.error('Export failed', e); }
+      });
+    }
+
+    // --- Events ---
+    document.getElementById('compare-btn').addEventListener('click', async () => {
+      const sel = document.getElementById('tubewell-select');
+      const selected = Array.from(sel.selectedOptions).map(o => o.value);
+      const from = document.getElementById('date-from').value;
+      const to = document.getElementById('date-to').value;
+      document.getElementById('range-note').innerText = '';
+      const data = await fetchComparison(selected, from, to);
+      latestComparisonData = data;
+    });
+
+    document.getElementById('export-csv').addEventListener('click', () => { if (latestComparisonData) exportCSVFromData(latestComparisonData); });
+    document.getElementById('export-png').addEventListener('click', () => { exportChartsAsPNG(); });
+
+    // Initialize on load
+    (async function init() {
+      await loadTubewells();
+      // Pre-select first 2 tubewells if available
+      const sel = document.getElementById('tubewell-select');
+      if (sel.options.length > 0) { sel.options[0].selected = true; if (sel.options.length>1) sel.options[1].selected = true; }
+      // show placeholder until compare clicked
+      document.getElementById('no-selection').style.display = 'flex';
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tubewell Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+      :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --success: #4cc9a4;
+        --danger: #e85d75;
+        --warning: #ffc107;
+        --dark: #2a6f97;
+        --light: #f8f9fa;
+        --gradient-start: #2c7da0;
+        --gradient-end: #01497c;
+      }
+      
+      body {
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        color: #333;
+        padding: 1rem;
+      }
+      
+      .dashboard-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        margin: 0 auto;
+        padding: 1.5rem;
+        max-width: 1400px;
+      }
+      
+      .header-section {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      
+      .header-section h1 {
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.8rem;
+      }
+      
+      .header-section p {
+        color: #6c757d;
+        font-size: 1rem;
+      }
+      
+      /* Tabs Styling */
+      .nav-tabs {
+        border-bottom: 2px solid var(--primary);
+        margin-bottom: 1.5rem;
+      }
+      
+      .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px 8px 0 0;
+        margin-right: 0.5rem;
+      }
+      
+      .nav-tabs .nav-link.active {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+      }
+      
+      .nav-tabs .nav-link:hover {
+        border: none;
+        color: var(--primary);
+      }
+      
+      .tab-pane {
+        padding: 0;
+      }
+      
+      .tubewells-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+        margin-bottom: 1rem;
+      }
+      
+      @media (max-width: 1200px) {
+        .tubewells-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      
+      @media (max-width: 768px) {
+        .tubewells-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .tubewell-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: fit-content;
+      }
+      
+      .tubewell-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      }
+      
+      .tubewell-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0 0 0.8rem 0;
+        text-align: center;
+      }
+      
+      /* Top row of small boxes (1.5x1.5 inches) */
+      .top-boxes {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .status-box {
+        background: white;
+        border-radius: 8px;
+        padding: 0.7rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary);
+        height: 90px; /* Approximately 1.5 inches */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .status-box.high-voltage {
+        border-left-color: #ccc;
+      }
+      
+      .status-box.low-voltage {
+        border-left-color: #ccc;
+      }
+      
+      .status-box.alert-high {
+        border-left-color: var(--danger);
+        animation: blinkRed 1s infinite;
+      }
+      
+      .status-box.alert-low {
+        border-left-color: var(--warning);
+        animation: blinkYellow 1s infinite;
+      }
+      
+      @keyframes blinkRed {
+        0%, 100% { background-color: white; }
+        50% { background-color: rgba(232, 93, 117, 0.15); }
+      }
+      
+      @keyframes blinkYellow {
+        0%, 100% { background-color: white; }
+        50% { background-color: rgba(255, 193, 7, 0.15); }
+      }
+      
+      .status-value {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--dark);
+        margin-bottom: 0.2rem;
+      }
+      
+      .status-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 600;
+      }
+      
+      .alert-sign {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: white;
+        animation: blink 1s infinite;
+      }
+      
+      .alert-high .alert-sign {
+        background-color: var(--danger);
+      }
+      
+      .alert-low .alert-sign {
+        background-color: var(--warning);
+      }
+      
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      .caution-icon {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        font-size: 0.9rem;
+      }
+      
+      .alert-high .caution-icon {
+        color: var(--danger);
+      }
+      
+      .alert-low .caution-icon {
+        color: var(--warning);
+      }
+      
+      /* Middle section with power boxes and voltage/current boxes */
+      .middle-section {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .power-boxes {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      
+      .power-box {
+        background: white;
+        border-radius: 8px;
+        padding: 0.8rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary);
+        height: 90px; /* Each power box is 1.5 inches tall */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      
+      .power-value {
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--dark);
+        margin-bottom: 0.2rem;
+      }
+      
+      .power-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+      }
+      
+      .voltage-current-boxes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+      }
+      
+      .phase-box {
+        background: white;
+        border-radius: 8px;
+        padding: 0.8rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary);
+        height: 180px; /* Combined height of both power boxes */
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .phase-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 0.3rem;
+      }
+      
+      .phase-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.85rem;
+      }
+      
+      .phase-item:last-child {
+        border-bottom: none;
+      }
+      
+      .phase-label {
+        font-weight: 600;
+        color: var(--dark);
+      }
+      
+      .phase-value {
+        font-weight: 700;
+        color: var(--primary);
+      }
+      
+      .phase-value.alert-high {
+        color: var(--danger);
+        animation: blinkTextRed 1s infinite;
+      }
+      
+      .phase-value.alert-low {
+        color: var(--warning);
+        animation: blinkTextYellow 1s infinite;
+      }
+      
+      @keyframes blinkTextRed {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
+      @keyframes blinkTextYellow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
+      /* Bottom section with ON/OFF buttons */
+      .bottom-section {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.8rem;
+      }
+      
+      .control-btn {
+        flex: 1;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        padding: 0.7rem 0;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+      
+      .btn-on {
+        background: linear-gradient(to right, var(--success), #3ab795);
+        color: white;
+      }
+      
+      .btn-off {
+        background: linear-gradient(to right, #6c757d, #8a939b);
+        color: white;
+      }
+      
+      .control-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      .control-btn:disabled:hover {
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .last-updated {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 1rem;
+      }
+      
+      .navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 1.5rem;
+      }
+      
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .active-status {
+        border-left-color: var(--success);
+      }
+      
+      .water-flow {
+        border-left-color: #9b59b6;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="fas fa-water me-2" style="color: var(--primary);"></i>
+            Tubewell Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">
+                        <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/history">
+                        <i class="fas fa-history me-1"></i> History
+                    </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog me-1"></i> Settings
+                    </a>
+                </li> -->
+                <!-- <li class="nav-item">
+                    <a class="nav-link position-relative" href="#">
+                        <i class="fas fa-bell me-1"></i> Alerts
+                        <span class="notification-badge">3</span>
+                    </a>
+                </li> -->
+                
+                <!-- ADD THIS USER DROPDOWN SECTION -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item-text">
+                            <small class="text-muted">Logged in as</small><br>
+                            <strong>{{ current_user.username }}</strong>
+                        </span></li>
+                        <!-- <li><hr class="dropdown-divider"></li> -->
+                        <!-- <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a></li> -->
+                        <!-- <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a></li> -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+    <div class="dashboard-container">
+      <div class="header-section">
+        <h1><i class="fas fa-tachometer-alt me-2"></i>Tubewell Dashboard</h1>
+        <p class="lead">Monitor and control all your tubewells in real-time</p>
+      </div>
+      
+      <!-- Tabs Navigation -->
+      <ul class="nav nav-tabs" id="tubewellTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">
+            <i class="fas fa-water me-2"></i>Tab 1
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">
+            <i class="fas fa-water me-2"></i>Tab 2
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab3-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">
+            <i class="fas fa-water me-2"></i>Tab 3
+          </button>
+        </li>
+         <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab4-tab" data-bs-toggle="tab" data-bs-target="#tab4" type="button" role="tab" aria-controls="tab3" aria-selected="false">
+            <i class="fas fa-water me-2"></i>Tab 4
+          </button>
+        </li>
+      </ul>
+      
+      <!-- Tab Content -->
+      <div class="tab-content" id="tubewellTabsContent">
+        <!-- Tab 1: Tubewells 1-6 -->
+        <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+          <div class="tubewells-grid" id="tubewells-container-1">
+            <!-- Tubewell cards for group 1 will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- Tab 2: Tubewells 7-12 -->
+        <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+          <div class="tubewells-grid" id="tubewells-container-2">
+            <!-- Tubewell cards for group 2 will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- Tab 3: Tubewells 13-18 -->
+        <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+          <div class="tubewells-grid" id="tubewells-container-3">
+            <!-- Tubewell cards for group 3 will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Tab 4: Tubewells 19-24 -->
+        <div class="tab-pane fade" id="tab4" role="tabpanel" aria-labelledby="tab4-tab">
+          <div class="tubewells-grid" id="tubewells-container-4">
+            <!-- Tubewell cards for group 4 will be inserted here -->
+          </div>
+      </div>
+      
+      <div class="last-updated">
+        <i class="fas fa-sync-alt me-1"></i> Last updated: <span id="update-time"></span>
+      </div>
+    </div>
+
+    <script>
+      // Track button states to prevent multiple clicks
+      const buttonStates = {};
+      
+      // Create a tubewell card HTML with the exact layout from your drawing
+      function createTubewellCard(id, data) {
+        const isOn = data.status === "ON";
+        
+        // Initialize button state
+        buttonStates[id] = {
+          on: !isOn, // Enable ON button if currently OFF
+          off: isOn  // Enable OFF button if currently ON
+        };
+        
+        return `
+        <div class="tubewell-card" data-id="${id}">
+          <h3 class="tubewell-title">Tubewell #${id+1}</h3>
+          
+          <!-- Top row of small boxes (1.5x1.5 inches) -->
+          <div class="top-boxes">
+            <div class="status-box active-status">
+              <div class="status-value" id="active-status-${id}">${isOn ? "ON" : "OFF"}</div>
+              <div class="status-label">Active Status</div>
+            </div>
+            
+            <div class="status-box high-voltage" id="high-voltage-box-${id}">
+              <div class="status-value" id="high-voltage-${id}">--</div>
+              <div class="status-label">High Voltage</div>
+              <div class="alert-sign" style="display: none;">!</div>
+              <i class="fas fa-exclamation-triangle caution-icon" style="display: none;"></i>
+            </div>
+            
+            <div class="status-box low-voltage" id="low-voltage-box-${id}">
+              <div class="status-value" id="low-voltage-${id}">--</div>
+              <div class="status-label">Low Voltage</div>
+              <div class="alert-sign" style="display: none;">!</div>
+              <i class="fas fa-exclamation-triangle caution-icon" style="display: none;"></i>
+            </div>
+            
+            <div class="status-box water-flow">
+              <div class="status-value" id="water-flow-${id}">0 L/min</div>
+              <div class="status-label">Water Flow</div>
+            </div>
+          </div>
+          
+          <!-- Middle section with power boxes and voltage/current boxes -->
+          <div class="middle-section">
+            <div class="power-boxes">
+              <div class="power-box">
+                <div class="power-value" id="active-power-${id}">0 kW</div>
+                <div class="power-label">Active Power</div>
+              </div>
+              
+              <div class="power-box">
+                <div class="power-value" id="reactive-power-${id}">0 kVAR</div>
+                <div class="power-label">Reactive Power</div>
+              </div>
+            </div>
+            
+            <div class="voltage-current-boxes">
+              <div class="phase-box">
+                <div class="phase-title">Voltage</div>
+                <div class="phase-item">
+                  <span class="phase-label">A</span>
+                  <span class="phase-value" id="voltage-a-${id}">0 V</span>
+                </div>
+                <div class="phase-item">
+                  <span class="phase-label">B</span>
+                  <span class="phase-value" id="voltage-b-${id}">0 V</span>
+                </div>
+                <div class="phase-item">
+                  <span class="phase-label">C</span>
+                  <span class="phase-value" id="voltage-c-${id}">0 V</span>
+                </div>
+              </div>
+              
+              <div class="phase-box">
+                <div class="phase-title">Current</div>
+                <div class="phase-item">
+                  <span class="phase-label">A</span>
+                  <span class="phase-value" id="current-a-${id}">0 A</span>
+                </div>
+                <div class="phase-item">
+                  <span class="phase-label">B</span>
+                  <span class="phase-value" id="current-b-${id}">0 A</span>
+                </div>
+                <div class="phase-item">
+                  <span class="phase-label">C</span>
+                  <span class="phase-value" id="current-c-${id}">0 A</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bottom section with ON/OFF buttons -->
+          <div class="bottom-section">
+            <button class="control-btn btn-on" data-id="${id}" id="btn-on-${id}" ${isOn ? 'disabled' : ''}>ON</button>
+            <button class="control-btn btn-off" data-id="${id}" id="btn-off-${id}" ${!isOn ? 'disabled' : ''}>OFF</button>
+          </div>
+        </div>`;
+      }
+      
+      // Update a specific tubewell card with real data
+      function updateTubewellCard(id, data) {
+        const isOn = data.status === "ON";
+        
+        // Update active status
+        document.getElementById(`active-status-${id}`).textContent = isOn ? "ON" : "OFF";
+        
+        // Update power values - reset to zero if tubewell is OFF
+        let avgActivePower, avgReactivePower;
+        if (isOn) {
+          avgActivePower = ((Number(data.active_power.A) + Number(data.active_power.B) + Number(data.active_power.C)) / 3).toFixed(2);
+          avgReactivePower = ((Number(data.reactive_power.A) + Number(data.reactive_power.B) + Number(data.reactive_power.C)) / 3).toFixed(2);
+        } else {
+          avgActivePower = "0.00";
+          avgReactivePower = "0.00";
+        }
+        
+        document.getElementById(`active-power-${id}`).textContent = `${avgActivePower} kW`;
+        document.getElementById(`reactive-power-${id}`).textContent = `${avgReactivePower} kVAR`;
+        
+        // Update voltage values - reset to zero if tubewell is OFF
+        if (isOn) {
+          document.getElementById(`voltage-a-${id}`).textContent = `${data.voltage.A} V`;
+          document.getElementById(`voltage-b-${id}`).textContent = `${data.voltage.B} V`;
+          document.getElementById(`voltage-c-${id}`).textContent = `${data.voltage.C} V`;
+        } else {
+          document.getElementById(`voltage-a-${id}`).textContent = `0 V`;
+          document.getElementById(`voltage-b-${id}`).textContent = `0 V`;
+          document.getElementById(`voltage-c-${id}`).textContent = `0 V`;
+        }
+        
+        // Update current values - reset to zero if tubewell is OFF
+        if (isOn) {
+          document.getElementById(`current-a-${id}`).textContent = `${data.current.A} A`;
+          document.getElementById(`current-b-${id}`).textContent = `${data.current.B} A`;
+          document.getElementById(`current-c-${id}`).textContent = `${data.current.C} A`;
+        } else {
+          document.getElementById(`current-a-${id}`).textContent = `0 A`;
+          document.getElementById(`current-b-${id}`).textContent = `0 A`;
+          document.getElementById(`current-c-${id}`).textContent = `0 A`;
+        }
+        
+        // Update water flow (placeholder for now) - reset to zero if tubewell is OFF
+        if (isOn) {
+          document.getElementById(`water-flow-${id}`).textContent = `${(Math.random() * 10).toFixed(1)} L/min`;
+        } else {
+          document.getElementById(`water-flow-${id}`).textContent = `0 L/min`;
+        }
+        
+        // Update button states and disable/enable appropriately
+        const onBtn = document.getElementById(`btn-on-${id}`);
+        const offBtn = document.getElementById(`btn-off-${id}`);
+        
+        if (isOn) {
+          onBtn.style.opacity = "0.6";
+          offBtn.style.opacity = "1";
+          onBtn.disabled = true;
+          offBtn.disabled = false;
+        } else {
+          onBtn.style.opacity = "1";
+          offBtn.style.opacity = "0.6";
+          onBtn.disabled = false;
+          offBtn.disabled = true;
+        }
+        
+        // Update button states tracking
+        buttonStates[id] = {
+          on: !isOn, // Enable ON button if currently OFF
+          off: isOn  // Enable OFF button if currently ON
+        };
+        
+        // Check for high/low voltage alerts - ONLY IF TUBEWELL IS ON
+        const highVoltageBox = document.getElementById(`high-voltage-box-${id}`);
+        const lowVoltageBox = document.getElementById(`low-voltage-box-${id}`);
+        const highVoltageValue = document.getElementById(`high-voltage-${id}`);
+        const lowVoltageValue = document.getElementById(`low-voltage-${id}`);
+        
+        // Reset all alerts first
+        highVoltageBox.classList.remove('alert-high');
+        lowVoltageBox.classList.remove('alert-low');
+        highVoltageBox.querySelector('.alert-sign').style.display = 'none';
+        highVoltageBox.querySelector('.caution-icon').style.display = 'none';
+        lowVoltageBox.querySelector('.alert-sign').style.display = 'none';
+        lowVoltageBox.querySelector('.caution-icon').style.display = 'none';
+        
+        // Remove alert classes from voltage values
+        document.getElementById(`voltage-a-${id}`).classList.remove('alert-high', 'alert-low');
+        document.getElementById(`voltage-b-${id}`).classList.remove('alert-high', 'alert-low');
+        document.getElementById(`voltage-c-${id}`).classList.remove('alert-high', 'alert-low');
+        
+        if (isOn) {
+          // Only check voltage alerts if tubewell is ON
+          const maxVoltage = Math.max(data.voltage.A, data.voltage.B, data.voltage.C);
+          const minVoltage = Math.min(data.voltage.A, data.voltage.B, data.voltage.C);
+          
+          // Update high/low voltage display values
+          highVoltageValue.textContent = `${maxVoltage} V`;
+          lowVoltageValue.textContent = `${minVoltage} V`;
+          
+          // YOUR VOLTAGE THRESHOLDS - UPDATE THESE VALUES
+          const HIGH_VOLTAGE_THRESHOLD = 250; // Change this to your desired value
+          const LOW_VOLTAGE_THRESHOLD = 210;  // Change this to your desired value
+          
+          // High voltage alert (red blinking) - only when tubewell is ON
+          if (maxVoltage > HIGH_VOLTAGE_THRESHOLD) {
+            highVoltageBox.classList.add('alert-high');
+            highVoltageBox.querySelector('.alert-sign').style.display = 'flex';
+            highVoltageBox.querySelector('.caution-icon').style.display = 'block';
+            
+            // Highlight the phases with high voltage
+            if (data.voltage.A > HIGH_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-a-${id}`).classList.add('alert-high');
+            }
+            if (data.voltage.B > HIGH_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-b-${id}`).classList.add('alert-high');
+            }
+            if (data.voltage.C > HIGH_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-c-${id}`).classList.add('alert-high');
+            }
+          }
+          
+          // Low voltage alert (yellow blinking) - only when tubewell is ON
+          if (minVoltage < LOW_VOLTAGE_THRESHOLD) {
+            lowVoltageBox.classList.add('alert-low');
+            lowVoltageBox.querySelector('.alert-sign').style.display = 'flex';
+            lowVoltageBox.querySelector('.caution-icon').style.display = 'block';
+            
+            // Highlight the phases with low voltage
+            if (data.voltage.A < LOW_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-a-${id}`).classList.add('alert-low');
+            }
+            if (data.voltage.B < LOW_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-b-${id}`).classList.add('alert-low');
+            }
+            if (data.voltage.C < LOW_VOLTAGE_THRESHOLD) {
+              document.getElementById(`voltage-c-${id}`).classList.add('alert-low');
+            }
+          }
+        } else {
+          // Tubewell is OFF - reset voltage displays and show dashes
+          highVoltageValue.textContent = "--";
+          lowVoltageValue.textContent = "--";
+        }
+      }
+      
+      // Toggle tubewell status
+      function toggleTubewell(id, turnOn) {
+        // Prevent multiple clicks on the same button
+        if ((turnOn && !buttonStates[id].on) || (!turnOn && !buttonStates[id].off)) {
+          return;
+        }
+        
+        // Disable both buttons temporarily during the request
+        const onBtn = document.getElementById(`btn-on-${id}`);
+        const offBtn = document.getElementById(`btn-off-${id}`);
+        onBtn.disabled = true;
+        offBtn.disabled = true;
+        
+        $.post(`/api/tubewell/${id}/toggle`, (res) => {
+          // Refresh data for this tubewell
+          fetchTubewellData(id);
+          
+          // Notify detail page about the status change using localStorage
+          const eventData = {
+            tubewellId: id,
+            status: turnOn ? 'ON' : 'OFF',
+            timestamp: Date.now()
+          };
+          localStorage.setItem(`tubewell_status_${id}`, JSON.stringify(eventData));
+          localStorage.setItem(`tubewell_status_update`, Date.now().toString());
+          
+          // Also trigger storage event for same-window listeners
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: `tubewell_status_${id}`,
+            newValue: JSON.stringify(eventData)
+          }));
+          
+        }).fail(function() {
+          // Re-enable buttons if request fails
+          fetchTubewellData(id);
+        });
+      }
+      
+      // Fetch data for a specific tubewell
+// In the fetchTubewellData function in index.html, update the error handling:
+function fetchTubewellData(id) {
+    $.getJSON(`/api/tubewell/${id}/data`, (data) => {
+        updateTubewellCard(id, data);
+    }).fail(function() {
+        console.error(`Failed to fetch data for tubewell ${id}`);
+        // Use last known data instead of zero data
+        const lastKnownData = localStorage.getItem(`tubewell_last_data_${id}`);
+        if (lastKnownData) {
+            try {
+                updateTubewellCard(id, JSON.parse(lastKnownData));
+            } catch (e) {
+                // Fallback to minimal data
+                updateTubewellCard(id, {
+                    status: "OFF",
+                    voltage: {A: 0, B: 0, C: 0},
+                    current: {A: 0, B: 0, C: 0},
+                    active_power: {A: 0, B: 0, C: 0},
+                    reactive_power: {A: 0, B: 0, C: 0}
+                });
+            }
+        }
+    });
+}
+      
+      // Load tubewells for a specific group
+      function loadTubewellsForGroup(groupId, startId, endId) {
+        const containerId = `tubewells-container-${groupId}`;
+        
+        for (let id = startId; id <= endId; id++) {
+          // Create card
+          $(`#${containerId}`).append(createTubewellCard(id, {
+            status: "OFF",
+            active_power: {A: 0, B: 0, C: 0},
+            reactive_power: {A: 0, B: 0, C: 0},
+            current: {A: 0, B: 0, C: 0},
+            voltage: {A: 0, B: 0, C: 0}
+          }));
+          
+          // Set up click event to open details page
+          $(`[data-id="${id}"]`).on('click', function(e) {
+            // Don't trigger if clicking on buttons
+            if (!$(e.target).is('button') && !$(e.target).closest('button').length) {
+              window.location.href = `/tubewell/${id}`;
+            }
+          });
+          
+          // Set up button events
+          $(`#btn-on-${id}`).on('click', function(e) {
+            e.stopPropagation();
+            toggleTubewell(id, true);
+          });
+          
+          $(`#btn-off-${id}`).on('click', function(e) {
+            e.stopPropagation();
+            toggleTubewell(id, false);
+          });
+          
+          // Fetch initial data
+          fetchTubewellData(id);
+        }
+      }
+      
+      // Load all tubewell groups
+      function loadAllTubewells() {
+        // Group 1: Tubewells 0-5 (6 tubewells)
+        loadTubewellsForGroup(1, 0, 5);
+        
+        // Group 2: Tubewells 6-11 (6 tubewells) - for future expansion
+         loadTubewellsForGroup(2, 6, 11);
+        
+        // Group 3: Tubewells 12-17 (6 tubewells) - for future expansion
+         loadTubewellsForGroup(3, 12, 17);
+        // Group 4: Tubewells 18-23 (6 tubewells) - for future expansion
+         loadTubewellsForGroup(4, 18, 23);
+      }
+      
+      $(document).ready(function() {
+        // Load tubewells
+        loadAllTubewells();
+        
+        // Set up periodic updates for all tubewells
+        setInterval(function() {
+          // Update all 6 tubewells (0-5)
+          for (let id = 0; id < 6; id++) {
+            fetchTubewellData(id);
+          }
+        }, 2000); // Update every 2 seconds
+        
+        // Update last updated time
+        const updateTime = () => {
+          const now = new Date();
+          document.getElementById('update-time').textContent = now.toLocaleTimeString();
+        };
+        
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Listen for status updates from detail page via localStorage
+        window.addEventListener('storage', function(e) {
+          if (e.key && e.key.startsWith('tubewell_status_')) {
+            try {
+              const eventData = JSON.parse(e.newValue);
+              console.log('Received status update from detail page:', eventData);
+              // Refresh the specific tubewell card
+              if (eventData && eventData.tubewellId !== undefined) {
+                fetchTubewellData(eventData.tubewellId);
+              }
+            } catch (error) {
+              console.error('Error parsing status update:', error);
+            }
+          }
+          
+          // Also listen for general updates
+          if (e.key === 'tubewell_status_update') {
+            // Force refresh all visible tubewells
+            for (let id = 0; id < 6; id++) {
+              fetchTubewellData(id);
+            }
+          }
+        });
+        
+        // REMOVED the problematic interval that was clearing localStorage too quickly
+        // This was interfering with the detail page's historical data
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tubewell Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --success: #4cc9a4;
+        --danger: #e85d75;
+        --dark: #2a6f97;
+        --light: #f8f9fa;
+        --gradient-start: #2c7da0;
+        --gradient-end: #01497c;
+      }
+      
+      body {
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        color: #333;
+      }
+      
+      .dashboard-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        margin: 2rem auto;
+        padding: 2rem;
+        min-height: 1400px;
+      }
+      
+      .header-section {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      
+      .header-section h1 {
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      
+      .header-section p {
+        color: #6c757d;
+        font-size: 1.1rem;
+      }
+      
+      .detail-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+      }
+      
+      .metrics-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      
+      .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+        border-left: 4px solid var(--primary);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      
+      .metric-value {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--dark);
+        margin-bottom: 0.3rem;
+      }
+      
+      .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      
+      .status-on {
+        background-color: rgba(76, 201, 164, 0.15);
+        color: var(--success);
+      }
+      
+      .status-off {
+        background-color: rgba(232, 93, 117, 0.15);
+        color: var(--danger);
+      }
+      
+      .back-btn {
+        background: white;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      
+      .back-btn:hover {
+        background: var(--primary);
+        color: white;
+      }
+      
+      .charts-section {
+        margin-top: 0;
+      }
+      
+      .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      
+      .chart-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      .chart-title {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+      }
+      
+      .chart-title i {
+        margin-right: 0.5rem;
+      }
+      
+      .chart-canvas-container {
+        position: relative;
+        height: 200px;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      .chart-scrollable {
+        width: 100%;
+      }
+      
+      .chart-scroll-info {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+      }
+      
+      .navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 15px 15px;
+      }
+      
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .last-updated {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 1rem;
+      }
+      
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        height: 100%;
+      }
+      
+      /* Modal styles for expanded chart view */
+      .chart-modal .modal-dialog {
+        max-width: 95%;
+        max-height: 90vh;
+        width: 95%;
+        margin: 2.5vh auto;
+      }
+      
+      .chart-modal .modal-content {
+        border-radius: 15px;
+        border: none;
+        height: 90vh;
+        width: 100%;
+      }
+      
+      .chart-modal .modal-header {
+        background: var(--primary);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1rem 1.5rem;
+      }
+      
+      .chart-modal .modal-body {
+        padding: 1.5rem;
+        height: calc(90vh - 120px);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .expanded-chart-container {
+        width: 100%;
+        flex-grow: 1;
+        overflow-x: auto;
+        position: relative;
+        min-height: 500px;
+      }
+
+      .expanded-chart {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .historical-data {
+        margin-top: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        flex-shrink: 0;
+      }
+      
+      .historical-table-container {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+      }
+
+      .data-table {
+        width: 100%;
+        font-size: 0.9rem;
+        border-collapse: collapse;
+      }
+      
+      .data-table th {
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      
+      .data-table td {
+        padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+      }
+      
+      .data-table tr:nth-child(even) {
+        background: #f2f2f2;
+      }
+      
+      .data-table tr:last-child {
+        background-color: #e8f4fc;
+        font-weight: bold;
+      }
+      
+      .small-chart-container {
+        width: 100%;
+        height: 100%;
+      }
+      
+      .phase-value.alert-high {
+        color: var(--danger);
+        animation: blinkTextRed 1s infinite;
+      }
+      
+      .phase-value.alert-low {
+        color: var(--warning);
+        animation: blinkTextYellow 1s infinite;
+      }
+      
+      @keyframes blinkTextRed {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
+      @keyframes blinkTextYellow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
+      .vertical-layout {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .metrics-section {
+        margin-bottom: 2rem;
+      }
+      
+      .charts-section-full {
+        flex-grow: 1;
+      }
+
+      /* Control panel status display */
+      .control-panel-status {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+        border-left: 4px solid var(--success);
+      }
+      
+      .status-display {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      
+      .status-text {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--dark);
+      }
+      
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--success);
+      }
+
+      .status-dot.off {
+        background-color: #6c757d;
+      }
+      
+      /* NEW STYLES FOR BIG CHART IN MODAL */
+      .big-chart-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+      
+      .big-chart-canvas-container {
+        position: relative;
+        height: 500px;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      .big-chart-scrollable {
+        width: 100%;
+        height: 100%;
+      }
+      
+      /* Scrollable chart container */
+      .scrollable-chart-container {
+        width: 100%;
+        overflow-x: auto;
+        position: relative;
+        height: 500px;
+      }
+      
+      .scrollable-chart {
+        min-width: 1800px;
+        height: 470px;
+      }
+      
+      /* Power button styles */
+      .power-btn {
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .power-btn:hover {
+        background: #3da88a;
+        transform: translateY(-2px);
+      }
+
+      .power-btn.off {
+        background: #6c757d;
+      }
+
+      .power-btn.off:hover {
+        background: #5a6268;
+      }
+      
+      /* Disabled state for charts when tubewell is off */
+      .chart-disabled {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      
+      .chart-disabled-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: 10px;
+      }
+      
+      .chart-disabled-text {
+        background: var(--danger);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-weight: 600;
+      }
+      
+      /* Big chart styling */
+      .big-chart-wrapper {
+        width: 100%;
+        height: 500px;
+        position: relative;
+      }
+
+      /* FIX: Ensure charts are clickable */
+      .chart-container {
+        cursor: pointer !important;
+        position: relative;
+      }
+
+      .chart-container:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px) !important;
+        transition: all 0.3s ease !important;
+      }
+
+      .chart-canvas-container {
+        pointer-events: none;
+      }
+
+      .chart-canvas-container canvas {
+        pointer-events: none;
+      }
+
+      .chart-disabled-overlay {
+        pointer-events: none;
+      }
+
+      /* Historical mode banner */
+      .historical-banner {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        border-left: 4px solid #f1c40f;
+        color: #856404;
+      }
+
+      @media (max-width: 992px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .metrics-container {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      @media (max-width: 768px) {
+        .dashboard-container {
+          margin: 1rem;
+          padding: 1.5rem;
+        }
+        
+        .header-section h1 {
+          font-size: 1.75rem;
+        }
+        
+        .chart-canvas-container {
+          height: 180px;
+        }
+        
+        .detail-card {
+          padding: 1.5rem;
+        }
+        
+        .chart-modal .modal-dialog {
+          max-width: 95%;
+        }
+        
+        .expanded-chart-container {
+          height: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+          <i class="fas fa-water me-2" style="color: var(--primary);"></i>
+          Tubewell Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="/">
+                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/history">
+                <i class="fas fa-history me-1"></i> History
+              </a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link position-relative" href="#">
+                <i class="fas fa-bell me-1"></i> Alerts
+                <span class="notification-badge">3</span>
+              </a>
+            </li> -->
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                <li><span class="dropdown-item-text">
+                  <small class="text-muted">Logged in as</small><br>
+                  <strong>{{ current_user.username }}</strong>
+                </span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/logout">
+                  <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container dashboard-container">
+      <div class="header-section">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1><i class="fas fa-water me-2"></i><span id="tubewellTitle">Tubewell #1 — Details</span></h1>
+            <p class="lead">Detailed monitoring and control</p>
+          </div>
+          <a href="/" class="btn back-btn">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div class="vertical-layout">
+        <!-- Metrics Section -->
+        <div class="metrics-section">
+          <div class="detail-card">
+            <div class="row">
+              <div class="col-lg-4 col-md-12">
+                <div class="d-flex flex-column h-100">
+                  <div class="control-panel-status">
+                    <h5 class="fw-bold mb-3">Control Panel</h5>
+                    <div class="status-display">
+                      <div class="status-text">Status: <span id="statusText">OFF</span></div>
+                      <div class="status-indicator">
+                        <div class="status-dot off" id="statusDot"></div>
+                        <span id="statusLabel">Stopped</span>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <button id="powerButton" class="power-btn off">
+                        <i class="fas fa-power-off me-1"></i>Turn On
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-lg-8 col-md-12">
+                <div class="metrics-container">
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-bolt me-2"></i>Voltage (A/B/C)
+                    </div>
+                    <div class="metric-value" id="voltageText">0.0/0.0/0.0 V</div>
+                  </div>
+                  
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-bolt-lightning me-2"></i>Current (A/B/C)
+                    </div>
+                    <div class="metric-value" id="currentText">0.0/0.0/0.0 A</div>
+                  </div>
+                  
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-clock me-2"></i>Runtime
+                    </div>
+                    <div class="metric-value" id="runtimeText">0h 0m</div>
+                  </div>
+                  
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-battery-full me-2"></i>Active Power (A/B/C)
+                    </div>
+                    <div class="metric-value" id="activeText">0.0/0.0/0.0 kW</div>
+                  </div>
+                  
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-battery-three-quarters me-2"></i>Reactive Power (A/B/C)
+                    </div>
+                    <div class="metric-value" id="reactiveText">0.0 kVAR</div>
+                  </div>
+                  
+                  <div class="metric-card">
+                    <div class="metric-label">
+                      <i class="fas fa-tachometer-alt me-2"></i>Frequency
+                    </div>
+                    <div class="metric-value" id="frequencyText">0.0 Hz</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Small Charts Section -->
+        <div class="charts-section-full">
+          <div class="detail-card">
+            <div class="charts-grid">
+              <div class="chart-container" data-chart-type="voltage">
+                <div class="chart-title">
+                  <i class="fas fa-bolt me-2"></i>Voltage (V) - Live
+                </div>
+                <div class="chart-canvas-container">
+                  <div class="small-chart-container">
+                    <canvas id="voltageChart"></canvas>
+                  </div>
+                  <div class="chart-disabled-overlay" id="voltageDisabledOverlay" style="display: flex;">
+                    <div class="chart-disabled-text">Tubewell Off</div>
+                  </div>
+                </div>
+                <div class="chart-scroll-info">
+                  <i class="fas fa-info-circle me-1"></i> Live data (1-second updates)
+                </div>
+              </div>
+              
+              <div class="chart-container" data-chart-type="current">
+                <div class="chart-title">
+                  <i class="fas fa-bolt-lightning me-2"></i>Current (A) - Live
+                </div>
+                <div class="chart-canvas-container">
+                  <div class="small-chart-container">
+                    <canvas id="currentChart"></canvas>
+                  </div>
+                  <div class="chart-disabled-overlay" id="currentDisabledOverlay" style="display: flex;">
+                    <div class="chart-disabled-text">Tubewell Off</div>
+                  </div>
+                </div>
+                <div class="chart-scroll-info">
+                  <i class="fas fa-info-circle me-1"></i> Live data (1-second updates)
+                </div>
+              </div>
+              
+              <div class="chart-container" data-chart-type="active_power">
+                <div class="chart-title">
+                  <i class="fas fa-chart-line me-2"></i>Active Power (kW) - Live
+                </div>
+                <div class="chart-canvas-container">
+                  <div class="small-chart-container">
+                    <canvas id="activePowerChart"></canvas>
+                  </div>
+                  <div class="chart-disabled-overlay" id="activePowerDisabledOverlay" style="display: flex;">
+                    <div class="chart-disabled-text">Tubewell Off</div>
+                  </div>
+                </div>
+                <div class="chart-scroll-info">
+                  <i class="fas fa-info-circle me-1"></i> Live data (1-second updates)
+                </div>
+              </div>
+              
+              <div class="chart-container" data-chart-type="reactive_power">
+                <div class="chart-title">
+                  <i class="fas fa-chart-area me-2"></i>Reactive Power (kVAR) - Live
+                </div>
+                <div class="chart-canvas-container">
+                  <div class="small-chart-container">
+                    <canvas id="reactivePowerChart"></canvas>
+                  </div>
+                  <div class="chart-disabled-overlay" id="reactivePowerDisabledOverlay" style="display: flex;">
+                    <div class="chart-disabled-text">Tubewell Off</div>
+                  </div>
+                </div>
+                <div class="chart-scroll-info">
+                  <i class="fas fa-info-circle me-1"></i> Live data (1-second updates)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="last-updated">
+        <i class="fas fa-sync-alt me-1"></i> Last updated: <span id="update-time">10/01/2025 4:15:57 PM</span>
+      </div>
+    </div>
+
+    <!-- Modal for expanded chart view -->
+    <div class="modal fade chart-modal" id="chartModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalChartTitle">Chart Details</h5>
+            
+            <!-- Date Picker and Controls -->
+            <div class="d-flex align-items-center gap-2">
+              <div class="input-group input-group-sm" style="width: 200px;">
+                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                <input type="date" class="form-control" id="chartDatePicker">
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-primary" id="returnToLiveBtn" style="display: none;">
+                <i class="fas fa-play me-1"></i>Return to Live
+              </button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+          </div>
+
+          <!-- Historical Mode Banner -->
+          <div class="alert alert-warning historical-banner alert-dismissible fade show m-3 mb-0" id="historicalModeBanner" style="display: none;">
+            <i class="fas fa-history me-2"></i>
+            <span id="bannerText">Showing historical data, live updates paused</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="expanded-chart-container" id="expandedChartContainer">
+              <div class="big-chart-wrapper">
+                <div class="scrollable-chart-container">
+                  <div class="scrollable-chart">
+                    <canvas id="expandedChart" class="expanded-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-scroll-info">
+              <i class="fas fa-info-circle me-1"></i> Scroll horizontally to view historical data (48 hours shown with 15-minute intervals)
+            </div>
+            <div class="historical-data">
+              <h6>Historical Data (15-minute intervals)</h6>
+              <div class="historical-table-container" id="historicalTableContainer">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Phase A</th>
+                      <th>Phase B</th>
+                      <th>Phase C</th>
+                      <th>Average</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historicalDataBody">
+                    <!-- Data will be populated here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   <script>
+  (function(){
+    // Get tubewell ID from URL
+    const pathMatch = window.location.pathname.match(/\/tubewell\/(\d+)/);
+    const tubewellId = pathMatch ? Number(pathMatch[1]) : 0;
+
+    let voltageChart, currentChart, activePowerChart, reactivePowerChart, expandedChart;
+    
+    // Store current live data
+    let currentLiveData = {
+        voltage: { A: 0, B: 0, C: 0 },
+        current: { A: 0, B: 0, C: 0 },
+        active_power: { A: 0, B: 0, C: 0 },
+        reactive_power: { A: 0, B: 0, C: 0 },
+        frequency: 0
+    };
+
+    // Tubewell status and mode
+    let tubewellStatus = "OFF";
+    let dataUpdateInterval = null;
+    let currentExpandedChartType = '';
+    let chartUpdateInterval = null;
+    let isHistoricalMode = false;
+    let selectedDate = null;
+
+    // Store small chart instances
+    let smallCharts = {
+        voltage: null,
+        current: null,
+        active_power: null,
+        reactive_power: null
+    };
+
+    // Data buffers for small charts (1-second averaging)
+    let dataBuffers = {
+        voltage: { A: [], B: [], C: [] },
+        current: { A: [], B: [], C: [] },
+        active_power: { A: [], B: [], C: [] },
+        reactive_power: { A: [], B: [], C: [] }
+    };
+
+    // --- Function to update individual small chart ---
+    function updateSmallChart(chartType, dataset) {
+        if (!smallCharts[chartType]) {
+            console.warn("Small chart not initialized:", chartType);
+            return;
+        }
+        
+        const chart = smallCharts[chartType];
+        const now = new Date();
+        const timeLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        // Add new data point
+        if (chart.data.labels.length >= 20) {
+            chart.data.labels.shift();
+            chart.data.datasets.forEach(ds => {
+                if (ds.data.length >= 20) ds.data.shift();
+            });
+        }
+        
+        chart.data.labels.push(timeLabel);
+        
+        // Update all three datasets (phases A, B, C)
+        if (chart.data.datasets[0]) chart.data.datasets[0].data.push(dataset.A || 0);
+        if (chart.data.datasets[1]) chart.data.datasets[1].data.push(dataset.B || 0);
+        if (chart.data.datasets[2]) chart.data.datasets[2].data.push(dataset.C || 0);
+
+        // Update chart
+        chart.update('none');
+    }
+
+    // --- Enhanced chart creation for small charts ---
+    function createSmallChart(canvasId, chartType) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) {
+            console.error("Canvas element not found:", canvasId);
+            return null;
+        }
+
+        // Color schemes
+        const chartColors = {
+            voltage: {
+                A: { border: '#e74c3c', background: 'rgba(231, 76, 60, 0.1)' },
+                B: { border: '#3498db', background: 'rgba(52, 152, 219, 0.1)' },
+                C: { border: '#2ecc71', background: 'rgba(46, 204, 113, 0.1)' }
+            },
+            current: {
+                A: { border: '#f39c12', background: 'rgba(243, 156, 18, 0.1)' },
+                B: { border: '#9b59b6', background: 'rgba(155, 89, 182, 0.1)' },
+                C: { border: '#1abc9c', background: 'rgba(26, 188, 156, 0.1)' }
+            },
+            active_power: {
+                A: { border: '#2c7da0', background: 'rgba(44, 125, 160, 0.1)' },
+                B: { border: '#2c7da0', background: 'rgba(44, 125, 160, 0.1)' },
+                C: { border: '#2c7da0', background: 'rgba(44, 125, 160, 0.1)' }
+            },
+            reactive_power: {
+                A: { border: '#a9d6e5', background: 'rgba(169, 214, 229, 0.1)' },
+                B: { border: '#a9d6e5', background: 'rgba(169, 214, 229, 0.1)' },
+                C: { border: '#a9d6e5', background: 'rgba(169, 214, 229, 0.1)' }
+            }
+        };
+
+        const colors = chartColors[chartType];
+        
+        // Start with some initial data to make charts visible
+        const initialData = [0, 0, 0, 0, 0];
+        const initialLabels = ['', '', '', '', ''];
+
+        const chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: initialLabels,
+                datasets: [
+                    { 
+                        label: "Phase A", 
+                        borderColor: colors.A.border,
+                        backgroundColor: colors.A.background,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        data: [...initialData],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    { 
+                        label: "Phase B", 
+                        borderColor: colors.B.border,
+                        backgroundColor: colors.B.background,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        data: [...initialData],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    { 
+                        label: "Phase C", 
+                        borderColor: colors.C.border,
+                        backgroundColor: colors.C.background,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        data: [...initialData],
+                        fill: true,
+                        tension: 0.4
+                    }
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
+                plugins: { 
+                    legend: { 
+                        position: "bottom",
+                        labels: {
+                            usePointStyle: true,
+                            padding: 10,
+                            font: { size: 10 }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += getFormattedValue(context.parsed.y, chartType);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    x: { 
+                        display: true,
+                        grid: { display: false },
+                        ticks: {
+                            maxTicksLimit: 5,
+                            font: { size: 9 }
+                        }
+                    }, 
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: {
+                            font: { size: 9 },
+                            callback: function(value) {
+                                return getFormattedValue(value, chartType);
+                            }
+                        }
+                    } 
+                }
+            }
+        });
+
+        console.log(`Small chart created: ${chartType}`);
+        return chart;
+    }
+
+    // --- Format values based on chart type ---
+    function getFormattedValue(value, chartType) {
+        switch(chartType) {
+            case 'voltage':
+                return `${value.toFixed(1)} V`;
+            case 'current':
+                return `${value.toFixed(1)} A`;
+            case 'active_power':
+                return `${value.toFixed(1)} kW`;
+            case 'reactive_power':
+                return `${value.toFixed(1)} kVAR`;
+            default:
+                return value.toFixed(1);
+        }
+    }
+
+    // --- Process buffered data for 1-second updates ---
+    function processBufferedData() {
+        const processed = {
+            voltage: { A: 0, B: 0, C: 0 },
+            current: { A: 0, B: 0, C: 0 },
+            active_power: { A: 0, B: 0, C: 0 },
+            reactive_power: { A: 0, B: 0, C: 0 }
+        };
+
+        // Calculate average of buffered data for each phase and type
+        Object.keys(dataBuffers).forEach(type => {
+            ['A', 'B', 'C'].forEach(phase => {
+                const buffer = dataBuffers[type][phase];
+                if (buffer.length > 0) {
+                    const sum = buffer.reduce((a, b) => a + b, 0);
+                    processed[type][phase] = sum / buffer.length;
+                } else {
+                    processed[type][phase] = currentLiveData[type]?.[phase] || 0;
+                }
+                // Clear buffer after processing
+                dataBuffers[type][phase] = [];
+            });
+        });
+
+        return processed;
+    }
+
+    // --- Update all small charts with current data ---
+    function updateAllSmallCharts() {
+        if (tubewellStatus === "OFF") {
+            console.log("Tubewell is OFF - charts not updating");
+            // Show zero values when tubewell is off
+            updateSmallChart("voltage", { A: 0, B: 0, C: 0 });
+            updateSmallChart("current", { A: 0, B: 0, C: 0 });
+            updateSmallChart("active_power", { A: 0, B: 0, C: 0 });
+            updateSmallChart("reactive_power", { A: 0, B: 0, C: 0 });
+            return;
+        }
+
+        console.log("Updating small charts with processed data");
+        
+        // Process buffered data for 1-second average
+        const processedData = processBufferedData();
+        
+        // Use the processed data
+        updateSmallChart("voltage", processedData.voltage);
+        updateSmallChart("current", processedData.current);
+        updateSmallChart("active_power", processedData.active_power);
+        updateSmallChart("reactive_power", processedData.reactive_power);
+    }
+
+    // --- Buffer incoming data for 1-second averaging ---
+    function bufferIncomingData(newData) {
+        ['A', 'B', 'C'].forEach(phase => {
+            if (newData.voltage && newData.voltage[phase] !== undefined) {
+                dataBuffers.voltage[phase].push(newData.voltage[phase]);
+            }
+            if (newData.current && newData.current[phase] !== undefined) {
+                dataBuffers.current[phase].push(newData.current[phase]);
+            }
+            if (newData.active_power && newData.active_power[phase] !== undefined) {
+                dataBuffers.active_power[phase].push(newData.active_power[phase]);
+            }
+            if (newData.reactive_power && newData.reactive_power[phase] !== undefined) {
+                dataBuffers.reactive_power[phase].push(newData.reactive_power[phase]);
+            }
+        });
+    }
+
+    // --- Start data updates for small charts ---
+    function startSmallChartUpdates() {
+        console.log("Starting small chart updates...");
+        // Clear any existing interval first
+        if (chartUpdateInterval) {
+            clearInterval(chartUpdateInterval);
+        }
+        // Set up interval for continuous updates - EXACTLY 1 SECOND
+        chartUpdateInterval = setInterval(updateAllSmallCharts, 1000);
+        
+        // Do an immediate update
+        updateAllSmallCharts();
+    }
+
+    // Stop small chart updates
+    function stopSmallChartUpdates() {
+        if (chartUpdateInterval) {
+            clearInterval(chartUpdateInterval);
+            chartUpdateInterval = null;
+            console.log("Stopped small chart updates");
+        }
+    }
+
+    // Initialize charts with proper data
+    function initCharts() {
+        console.log("Initializing charts...");
+        
+        // Initialize small charts with proper configuration
+        smallCharts["voltage"] = createSmallChart("voltageChart", "voltage");
+        smallCharts["current"] = createSmallChart("currentChart", "current"); 
+        smallCharts["active_power"] = createSmallChart("activePowerChart", "active_power");
+        smallCharts["reactive_power"] = createSmallChart("reactivePowerChart", "reactive_power");
+
+        console.log("Small charts initialized:", Object.keys(smallCharts));
+
+        // Start periodic updates
+        startSmallChartUpdates();
+        
+        // Enable click-to-expand events for all small charts
+        setupChartClickEvents();
+    }
+
+    function setupChartClickEvents() {
+        console.log("Setting up chart click events...");
+        
+        document.querySelectorAll('.chart-container').forEach(container => {
+            container.addEventListener('click', function(e) {
+                // Don't trigger if clicking on disabled overlay
+                if (e.target.closest('.chart-disabled-overlay')) {
+                    return;
+                }
+                
+                const chartType = this.getAttribute('data-chart-type');
+                console.log('Chart clicked:', chartType, 'Tubewell status:', tubewellStatus);
+                
+                if (chartType) {
+                    openExpandedChart(chartType);
+                }
+            });
+            
+            // Add hover effects for better UX
+            container.style.cursor = 'pointer';
+            container.title = 'Click to view expanded chart';
+        });
+        
+        console.log('Chart click events setup complete');
+    }
+
+    // Toggle tubewell status
+    function toggleTubewellStatus() {
+        console.log("Toggling tubewell status, current status:", tubewellStatus);
+        
+        // Send toggle command to backend
+        $.post(`/api/tubewell/${tubewellId}/toggle`)
+            .done(function(res) {
+                console.log("Toggle response:", res);
+                // Update local status based on response
+                tubewellStatus = res.status === "ON" ? "ON" : "OFF";
+                
+                // Update UI immediately
+                updateUIStatus();
+                
+                // Notify index page about the status change
+                const eventData = {
+                    tubewellId: tubewellId,
+                    status: tubewellStatus,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(`tubewell_status_${tubewellId}`, JSON.stringify(eventData));
+                localStorage.setItem(`tubewell_status_update`, Date.now().toString());
+                
+                // Fetch updated data
+                fetchLiveData();
+                
+            })
+            .fail(function(xhr, status, error) {
+                console.error('Failed to toggle tubewell status:', error);
+                alert('Failed to toggle tubewell status. Please try again.');
+            });
+    }
+
+    // Update UI status display
+    function updateUIStatus() {
+        console.log("Updating UI status to:", tubewellStatus);
+        
+        if (tubewellStatus === "ON") {
+            document.getElementById('statusText').textContent = 'ON';
+            document.getElementById('statusLabel').textContent = 'Running';
+            document.getElementById('statusDot').classList.remove('off');
+            document.getElementById('powerButton').classList.remove('off');
+            document.getElementById('powerButton').innerHTML = '<i class="fas fa-power-off me-1"></i>Turn Off';
+            
+            // Start data updates for metrics
+            if (!dataUpdateInterval) {
+                dataUpdateInterval = setInterval(fetchLiveData, 1000);
+                console.log("Started data update interval");
+            }
+            
+            // Start chart updates
+            startSmallChartUpdates();
+            
+            // Hide disabled overlays on charts
+            document.querySelectorAll('.chart-disabled-overlay').forEach(overlay => {
+                overlay.style.display = 'none';
+            });
+            
+        } else {
+            document.getElementById('statusText').textContent = 'OFF';
+            document.getElementById('statusLabel').textContent = 'Stopped';
+            document.getElementById('statusDot').classList.add('off');
+            document.getElementById('powerButton').classList.add('off');
+            document.getElementById('powerButton').innerHTML = '<i class="fas fa-power-off me-1"></i>Turn On';
+            
+            // Stop data updates but preserve current data
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+                dataUpdateInterval = null;
+                console.log("Stopped data update interval");
+            }
+            
+            // Stop chart updates but show zero values
+            stopSmallChartUpdates();
+            updateAllSmallCharts(); // Update charts with zeros
+            
+            // Show disabled overlays
+            document.querySelectorAll('.chart-disabled-overlay').forEach(overlay => {
+                overlay.style.display = 'flex';
+            });
+        }
+    }
+
+    // Fetch live data from API - FIXED VERSION
+    async function fetchLiveData() {
+        try {
+            const response = await fetch(`/api/tubewell/${tubewellId}/data`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const realData = await response.json();
+            
+            console.log("=== API DATA RECEIVED ===");
+            console.log("Status:", realData.status);
+            console.log("Voltage:", realData.voltage);
+            console.log("Current:", realData.current);
+            console.log("Active Power:", realData.active_power);
+            console.log("Reactive Power:", realData.reactive_power);
+            console.log("Frequency:", realData.frequency);
+            console.log("==========================");
+            
+            // Update current live data with real values
+            currentLiveData = {
+                voltage: realData.voltage || { A: 0, B: 0, C: 0 },
+                current: realData.current || { A: 0, B: 0, C: 0 },
+                active_power: realData.active_power || { A: 0, B: 0, C: 0 },
+                reactive_power: realData.reactive_power || { A: 0, B: 0, C: 0 },
+                frequency: realData.frequency || 0
+            };
+
+            // Buffer the incoming data for 1-second averaging
+            bufferIncomingData(currentLiveData);
+
+            // Update tubewell status based on API response
+            tubewellStatus = realData.status === "ON" ? "ON" : "OFF";
+            
+            // Update UI with current data
+            updateUI(realData);
+            
+        } catch (error) {
+            console.error("fetchLiveData error:", error);
+        }
+    }
+
+    // Fetch initial status from backend
+    async function fetchInitialStatus() {
+        try {
+            const response = await fetch(`/api/tubewell/${tubewellId}/data`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            console.log("Initial status data:", data);
+            
+            // Update tubewell status based on real data
+            tubewellStatus = data.status === "ON" ? "ON" : "OFF";
+            
+            // Update currentLiveData with real values
+            currentLiveData = {
+                voltage: data.voltage || { A: 0, B: 0, C: 0 },
+                current: data.current || { A: 0, B: 0, C: 0 },
+                active_power: data.active_power || { A: 0, B: 0, C: 0 },
+                reactive_power: data.reactive_power || { A: 0, B: 0, C: 0 },
+                frequency: data.frequency || 0
+            };
+            
+            updateUIStatus();
+            
+            // Update page title with real name
+            document.getElementById('tubewellTitle').textContent = `${data.name} — Details`;
+            
+        } catch (error) {
+            console.error("fetchInitialStatus error:", error);
+        }
+    }
+
+    // Update UI with new data - FIXED VERSION
+    function updateUI(data) {
+        // Always update page title and timestamp
+        document.getElementById('tubewellTitle').textContent = `${data.name} — Details`;
+        document.getElementById('update-time').textContent = new Date().toLocaleString();
+        
+        // Update metrics - show actual values (use currentLiveData which has the latest)
+        const voltage = currentLiveData.voltage;
+        const current = currentLiveData.current;
+        const active_power = currentLiveData.active_power;
+        const reactive_power = currentLiveData.reactive_power;
+        
+        document.getElementById('voltageText').textContent = 
+            `${voltage.A.toFixed(1)}/${voltage.B.toFixed(1)}/${voltage.C.toFixed(1)} V`;
+        document.getElementById('currentText').textContent = 
+            `${current.A.toFixed(2)}/${current.B.toFixed(2)}/${current.C.toFixed(2)} A`;
+        document.getElementById('activeText').textContent = 
+            `${active_power.A.toFixed(2)}/${active_power.B.toFixed(2)}/${active_power.C.toFixed(2)} kW`;
+        document.getElementById('reactiveText').textContent = 
+            `${reactive_power.A.toFixed(2)}/${reactive_power.B.toFixed(2)}/${reactive_power.C.toFixed(2)} kVAR`;
+        document.getElementById('frequencyText').textContent = `${currentLiveData.frequency.toFixed(2)} Hz`;
+        
+        // Update runtime only if available
+        if (data.total_runtime !== undefined) {
+            document.getElementById('runtimeText').textContent = formatRuntime(data.total_runtime);
+        }
+        
+        // Update UI status to reflect any changes
+        updateUIStatus();
+    }
+
+    // Format runtime helper
+    function formatRuntime(seconds) {
+        if (!seconds) return "0h 0m";
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes}m`;
+    }
+
+    // Load aggregated data for big charts
+    async function loadAggregatedChartData(chartType, specificDate = null) {
+        try {
+            let url = `/api/tubewell/${tubewellId}/aggregated`;
+            if (specificDate) {
+                url += `?date=${specificDate}`;
+            }
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const aggregatedData = await response.json();
+            
+            console.log(`Loaded ${aggregatedData.length} aggregated data points for`, chartType, "on date:", specificDate);
+            
+            // Process data for the chart - use 15-minute aggregated data
+            renderAggregatedChart(chartType, aggregatedData);
+            populateHistoricalTable(chartType, aggregatedData);
+            
+        } catch (error) {
+            console.error("Error loading aggregated data:", error);
+            // Fallback to empty data
+            renderAggregatedChart(chartType, []);
+            populateHistoricalTable(chartType, []);
+        }
+    }
+
+    // Render aggregated chart with 15-minute data
+    function renderAggregatedChart(chartType, aggregatedData) {
+        // Destroy existing chart if it exists
+        if (expandedChart) {
+            expandedChart.destroy();
+            expandedChart = null;
+        }
+        
+        const ctx = document.getElementById('expandedChart');
+        if (!ctx) {
+            console.error("Expanded chart canvas not found");
+            return;
+        }
+        
+        // Process data for display - use aggregated data directly
+        const displayData = processAggregatedDataForDisplay(aggregatedData, chartType);
+        
+        // Create chart with scrollable container
+        expandedChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: displayData.labels,
+                datasets: displayData.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 14 }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        bodyFont: { size: 14 },
+                        titleFont: { size: 14 }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (15-minute intervals)',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        ticks: {
+                            font: { size: 12 },
+                            maxTicksLimit: 12
+                        },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: getYAxisLabel(chartType),
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        beginAtZero: chartType !== 'voltage',
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                        ticks: { 
+                            font: { size: 12 },
+                            callback: function(value) {
+                                return getFormattedValue(value, chartType);
+                            }
+                        }
+                    }
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+    }
+
+    // Process aggregated data for display
+    function processAggregatedDataForDisplay(aggregatedData, chartType) {
+        const labels = [];
+        const datasets = [];
+        
+        console.log(`Processing ${aggregatedData.length} data points for ${chartType}`);
+        
+        // Use all available data points (up to 96 for 24 hours)
+        const displayData = aggregatedData.slice(-96);
+        
+        // Create labels (time in 15-minute intervals)
+        displayData.forEach(item => {
+            const date = new Date(item.timestamp);
+            // Format as HH:MM for better readability
+            labels.push(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        });
+        
+        // Create datasets based on chart type
+        if (chartType === 'voltage' || chartType === 'current') {
+            datasets.push(
+                { 
+                    label: 'Phase A', 
+                    data: displayData.map(d => chartType === 'voltage' ? d.voltage.A : d.current.A),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                },
+                { 
+                    label: 'Phase B', 
+                    data: displayData.map(d => chartType === 'voltage' ? d.voltage.B : d.current.B),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                },
+                { 
+                    label: 'Phase C', 
+                    data: displayData.map(d => chartType === 'voltage' ? d.voltage.C : d.current.C),
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                }
+            );
+        } else if (chartType === 'active_power' || chartType === 'reactive_power') {
+            // For power charts, show all three phases
+            datasets.push(
+                { 
+                    label: 'Phase A', 
+                    data: displayData.map(d => chartType === 'active_power' ? d.active_power.A : d.reactive_power.A),
+                    borderColor: '#2c7da0',
+                    backgroundColor: 'rgba(44, 125, 160, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                },
+                { 
+                    label: 'Phase B', 
+                    data: displayData.map(d => chartType === 'active_power' ? d.active_power.B : d.reactive_power.B),
+                    borderColor: '#a9d6e5',
+                    backgroundColor: 'rgba(169, 214, 229, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                },
+                { 
+                    label: 'Phase C', 
+                    data: displayData.map(d => chartType === 'active_power' ? d.active_power.C : d.reactive_power.C),
+                    borderColor: '#01497c',
+                    backgroundColor: 'rgba(1, 73, 124, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                }
+            );
+        }
+        
+        return { labels, datasets };
+    }
+
+    // Helper function for Y-axis labels
+    function getYAxisLabel(chartType) {
+        switch(chartType) {
+            case 'voltage': return 'Voltage (V)';
+            case 'current': return 'Current (A)';
+            case 'active_power': return 'Active Power (kW)';
+            case 'reactive_power': return 'Reactive Power (kVAR)';
+            default: return 'Value';
+        }
+    }
+
+    // Open expanded chart
+    async function openExpandedChart(chartType) {
+        console.log('Opening expanded chart:', chartType);
+        currentExpandedChartType = chartType;
+        
+        // Reset to live mode when opening a new chart
+        isHistoricalMode = false;
+        selectedDate = null;
+        document.getElementById('chartDatePicker').value = '';
+        document.getElementById('returnToLiveBtn').style.display = 'none';
+        document.getElementById('historicalModeBanner').style.display = 'none';
+        
+        const modalTitle = $('#modalChartTitle');
+        let title = '';
+        
+        if (chartType === 'voltage') title = 'Voltage (V) - Live Data';
+        else if (chartType === 'current') title = 'Current (A) - Live Data';
+        else if (chartType === 'active_power') title = 'Active Power (kW) - Live Data';
+        else if (chartType === 'reactive_power') title = 'Reactive Power (kVAR) - Live Data';
+        
+        modalTitle.text(title);
+        
+        // Load initial data (last 24 hours aggregated)
+        await loadAggregatedChartData(chartType);
+        
+        // Show modal
+        $('#chartModal').modal('show');
+        
+        console.log('Expanded chart opened successfully');
+    }
+
+    // Fill the historical table with data
+    function populateHistoricalTable(chartType, aggregatedData = []) {
+        const tbody = $('#historicalDataBody');
+        tbody.empty();
+
+        if (aggregatedData.length === 0) {
+            tbody.append('<tr><td colspan="5" style="text-align: center;">No historical data available</td></tr>');
+            return;
+        }
+
+        // Show the stored historical data (newest first)
+        const displayData = [...aggregatedData].reverse().slice(0, 20); // Show latest 20 entries
+        
+        displayData.forEach(item => {
+            const date = new Date(item.timestamp);
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let a, b, c;
+            
+            if (chartType === 'voltage') {
+                a = item.voltage.A !== undefined ? Number(item.voltage.A).toFixed(1) : '-';
+                b = item.voltage.B !== undefined ? Number(item.voltage.B).toFixed(1) : '-';
+                c = item.voltage.C !== undefined ? Number(item.voltage.C).toFixed(1) : '-';
+            } else if (chartType === 'current') {
+                a = item.current.A !== undefined ? Number(item.current.A).toFixed(2) : '-';
+                b = item.current.B !== undefined ? Number(item.current.B).toFixed(2) : '-';
+                c = item.current.C !== undefined ? Number(item.current.C).toFixed(2) : '-';
+            } else if (chartType === 'active_power') {
+                a = item.active_power.A !== undefined ? Number(item.active_power.A).toFixed(2) : '-';
+                b = item.active_power.B !== undefined ? Number(item.active_power.B).toFixed(2) : '-';
+                c = item.active_power.C !== undefined ? Number(item.active_power.C).toFixed(2) : '-';
+            } else if (chartType === 'reactive_power') {
+                a = item.reactive_power.A !== undefined ? Number(item.reactive_power.A).toFixed(2) : '-';
+                b = item.reactive_power.B !== undefined ? Number(item.reactive_power.B).toFixed(2) : '-';
+                c = item.reactive_power.C !== undefined ? Number(item.reactive_power.C).toFixed(2) : '-';
+            }
+            
+            const avg = (a !== '-' && b !== '-' && c !== '-') 
+                ? ((parseFloat(a) + parseFloat(b) + parseFloat(c)) / 3).toFixed(2) 
+                : '-';
+
+            const row = `<tr>
+                <td>${timeStr}</td>
+                <td>${a}</td>
+                <td>${b}</td>
+                <td>${c}</td>
+                <td>${avg}</td>
+            </tr>`;
+            tbody.append(row);
+        });
+
+        // Scroll table to top (newest data)
+        const tableContainer = document.getElementById('historicalTableContainer');
+        if (tableContainer) {
+            tableContainer.scrollTop = 0;
+        }
+    }
+
+    // Listen for status changes from other tabs/pages
+    function setupStatusSync() {
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('tubewell_status_')) {
+                try {
+                    const eventData = JSON.parse(e.newValue);
+                    if (eventData.tubewellId === tubewellId) {
+                        console.log('Received status update from other tab:', eventData);
+                        tubewellStatus = eventData.status;
+                        updateUIStatus();
+                        fetchLiveData();
+                    }
+                } catch (error) {
+                    console.error('Error parsing status update:', error);
+                }
+            }
+        });
+
+        // Also check for status updates periodically
+        setInterval(() => {
+            const lastUpdate = localStorage.getItem(`tubewell_status_update`);
+            if (lastUpdate) {
+                const now = Date.now();
+                const updateTime = parseInt(lastUpdate);
+                // If update happened in the last 5 seconds, refresh
+                if (now - updateTime < 5000) {
+                    fetchLiveData();
+                }
+            }
+        }, 3000);
+    }
+
+    // Initialize everything when document is ready
+    $(document).ready(async function() {
+        console.log('Document ready, initializing...');
+        
+        // Set up power button event listener
+        document.getElementById('powerButton').addEventListener('click', toggleTubewellStatus);
+        
+        // Set up date picker event listeners
+        $('#chartDatePicker').on('change', function() {
+            const selectedDate = this.value;
+            if (selectedDate) {
+                isHistoricalMode = true;
+                document.getElementById('returnToLiveBtn').style.display = 'block';
+                document.getElementById('historicalModeBanner').style.display = 'block';
+                document.getElementById('bannerText').textContent = 
+                    `Showing historical data for ${selectedDate}, live updates paused`;
+                
+                // Load historical data for selected date
+                loadAggregatedChartData(currentExpandedChartType, selectedDate);
+            }
+        });
+        
+        // Return to live buttonz
+        $('#returnToLiveBtn').on('click', function() {
+            isHistoricalMode = false;
+            selectedDate = null;
+            document.getElementById('chartDatePicker').value = '';
+            this.style.display = 'none';
+            document.getElementById('historicalModeBanner').style.display = 'none';
+            
+            // Return to live data
+            loadAggregatedChartData(currentExpandedChartType);
+        });
+        
+        // Reset when modal is closed
+        $('#chartModal').on('hidden.bs.modal', function() {
+            isHistoricalMode = false;
+            selectedDate = null;
+            document.getElementById('chartDatePicker').value = '';
+            document.getElementById('returnToLiveBtn').style.display = 'none';
+            document.getElementById('historicalModeBanner').style.display = 'none';
+        });
+        
+        // Initialize charts first to make them visible
+        initCharts();
+
+        // Fetch initial data
+        await fetchInitialStatus();
+        
+        // Set up status synchronization
+        setupStatusSync();
+        
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                fetchLiveData();
+            }
+        });
+
+    });
+
+  })();
+</script>
+    
+  </body>
+</html>
