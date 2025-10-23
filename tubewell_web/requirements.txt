@@ -1,0 +1,19 @@
+# --- Core Web Framework ---
+Flask==3.0.3
+Flask-Cors==5.0.0
+Flask-Login==0.6.3
+
+# --- MQTT Communication ---
+paho-mqtt==2.1.0
+
+# --- Utilities & System ---
+requests==2.32.3
+Werkzeug==3.0.3
+
+# --- Optional (common Flask dependencies) ---
+Jinja2==3.1.4
+itsdangerous==2.2.0
+click==8.1.7
+
+# --- Standard library (no install needed) ---
+# random, struct, threading, time, json, datetime, os, queue, shutil, sqlite3
